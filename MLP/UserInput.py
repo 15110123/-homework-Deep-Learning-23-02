@@ -1,4 +1,4 @@
-def ReadUserInput():
+def Read():
     # Đợi người dùng nhập số lớp 
     layerCountStr = input("Vui long nhap so lop: ")
 
@@ -11,7 +11,7 @@ def ReadUserInput():
     except:
         print("So khong hop le!")
         # Lặp lại việc hỏi số lớp (lặp lại hàm) 
-        return ReadUserInput()
+        return Read()
 
     listNodeCounts = []
 
@@ -35,6 +35,3 @@ def ReadUserInput():
 
     # Trả về một object kiểu Dict. Lấy dữ liệu như từ điển, như object["layerCount"]
     return {"layerCount": layerCount, "nodeCounts": listNodeCounts}
-
-result = ReadUserInput()
-print("So lop: %d" % result["layerCount"])
