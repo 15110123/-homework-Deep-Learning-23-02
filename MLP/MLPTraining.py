@@ -123,7 +123,6 @@ def train(X, y, layerCount, nodeCounts):
     Zm = Zm.reshape(xx.shape)
     CS = plt.contourf(xx, yy, Zm, 200, cmap='jet', alpha = .1)
 
-    # X = X.T
     N = 100
     plt.plot(X[0, :N], X[1, :N], 'bs', markersize = 7);
     plt.plot(X[0, N:2*N], X[1, N:2*N], 'g^', markersize = 7);
@@ -131,7 +130,6 @@ def train(X, y, layerCount, nodeCounts):
 
     plt.xlim([-1.5, 1.5])
     plt.ylim([-1.5, 1.5])
-
     plt.xlim(-1.5, 1.5)
     plt.ylim(-1.5, 1.5)
     plt.xticks(())
