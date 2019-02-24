@@ -7,15 +7,18 @@ def train(X, y, layerCount, nodeCounts):
     # LayerCount là hidden layer count. Ta gọi dl là d của lớp cuối (output layer) 
     dl = C = 3
     # Tạo một danh sách w, sẽ kích thước là layerCount
-    w = []
+    W = []
     b = []
     W1 = 0.01*np.random.randn(d0, nodeCounts[0])
     b1 = np.zeros((nodeCounts[0], 1))
 
     i = 0
-    while i < layerCount - 1:
-        w.append(0.01*np.random.randn(nodeCounts[i], nodeCounts[i + 1]))
-        b.append(np.zeros((nodeCounts[i + 1], 1)))
+    while i <= layerCount - 1:
+        preNodeCount = d0
+        if i != 0:
+            preNodeCount = nodeCounts[i - 1]
+        W.append(0.01*np.random.randn(preNodeCount, nodeCounts[i]))
+        b.append(np.zeros((nodeCounts[i], 1)))
         i = i + 1
 
     Wl = 0.01*np.random.randn(nodeCounts[layerCount - 1], dl)
@@ -23,13 +26,12 @@ def train(X, y, layerCount, nodeCounts):
 
     Y = mLPFunctions.convert_labels(y, C)
 
-    #print(Y)
     N = X.shape[1]
-    eta = 1 # learning rate
+    eta = 1 # Tham chiếu learning rate
     for i in range(1000):
         ## Feedforward
         Z1 = np.dot(W1.T, X) + b1
-        A1 = np.maximum(Z1, 0) #ReLU
+        A1 = np.maximum(Z1, 0) #Mô phỏng hàm ReLU
 
         Z = []
         A = []
@@ -39,51 +41,79 @@ def train(X, y, layerCount, nodeCounts):
             preA = A1
             if i != 0:
                 preA = A[i - 1]
-            Z.append(np.dot(w[i].T, preA) + b[i])
+            Z.append(np.dot(W[i].T, preA) + b[i])
             A.append(np.maximum(Z[i], 0))
+            i = i + 1
 
         Zl = np.dot(wl.T, A[layerCount - 1]) + bl
 
-        Yhat = mLPFunctions.softmax(Zl) #Softmax for output
+        Yhat = mLPFunctions.softmax(Zl) #Softmax
 
-        # print loss after each 1000 iterations
+        # In loss sau mỗi 1000 vòng lặp 
         if i %10 == 0:
-            # compute the loss: average cross-entropy loss
-            loss = mLPFunctions.cost(Y, Yhat, W1, W2, W3)
+            # average cross-entropy loss
+            loss = mLPFunctions.cost(Y, Yhat, W1, Wl, W)
             print("iter %d, loss: %f" %(i, loss))
 
         # backpropagation
     
-        E3 = (Yhat - Y )/N
-        dW3 = np.dot(A2, E3.T)
-        db3 = np.sum(E3, axis = 1, keepdims = True)
-        E2 = np.dot(W3, E3)
-        E2[Z2 <= 0] = 0 # gradient of ReLU
-        dW2 = np.dot(A1, E2.T)
-        db2 = np.sum(E2, axis = 1, keepdims = True)
-        E1 = np.dot(W2, E2)
-        E1[Z1 <= 0] = 0 # gradient of ReLU
+        El = (Yhat - Y )/N
+        dWl = np.dot(A[layerCount - 1], El.T)
+        dbl = np.sum(El, axis = 1, keepdims = True)
+
+        EPre = El
+        dW = []
+        db = []
+
+        for i in range(layerCount - 1, 0):
+            Wt = Wl
+            if i < layerCount - 1:
+                Wt = W[i + 1]
+            EPre = np.dot(Wt, EPre)
+            EPre[Z[i] <= 0] == 0
+            if i != 0:
+                dW.append(np.dot(A[i - 1], EPre.T))
+            else:
+                dW.append(np.dot(A1, EPre.T))
+            db.append(np.sum(EPre, axis = 1, keepdims = True))
+
+        dW = reversed(dW)
+        db = reversed(db)
+
+        E1 = np.dot(W[0], EPre)
+        E1[Z1 <= 0] = 0 # Tính gradient ReLU
         dW1 = np.dot(X, E1.T)
         db1 = np.sum(E1, axis = 1, keepdims = True)
 
-        # Gradient Descent update
+        # Cập nhật gradient Descent
         W1 += -eta*dW1
         b1 += -eta*db1
-        W2 += -eta*dW2
-        b2 += -eta*db2
-        W3 += -eta*dW3
-        b3 += -eta*db3
+
+        for i in range(0, layerCount - 1):
+            W[i] += -eta*dW[i]
+            b[i] += -eta*db[i]
+        
+        Wl += -eta*dWl
+        bl += -eta*dbl
 
     Z1 = np.dot(W1.T, X) + b1 
     A1 = np.maximum(Z1, 0)
-    Z2 = np.dot(W2.T, A1) + b2
-    A2 = np.maximum(Z2, 0)
-    Z3 = np.dot(W3.T, A2) + b3
 
-    predicted_class = np.argmax(Z3, axis=0)
+    # Apre là A trước đó, tại i - 1 hoặc A1 (i == 0)
+    Apre = A1
+
+    for i in range(0, layerCount - 1):
+        Z[i] = np.dot(W[i].T, Apre) + b[i]
+        A[i] = np.maximum(Z[i], 0)
+        Apre = A[i]
+
+    Zl = np.dot(Wl.T, A[layerCount - 1]) + bl
+
+    predicted_class = np.argmax(Zl, axis=0)
     acc = (100*np.mean(predicted_class == y))
     print('training accuracy: %.2f %%' % acc)
 
+    # Trực quan hóa kết quả phân loại 
     xm = np.arange(-1.5, 1.5, 0.025)
     xlen = len(xm)
     ym = np.arange(-1.5, 1.5, 0.025)
@@ -100,10 +130,10 @@ def train(X, y, layerCount, nodeCounts):
     A1 = np.maximum(Z1, 0)
     Z2 = np.dot(W2.T, A1) + b2
     # predicted class 
-    Z = np.argmax(Z2, axis=0)
+    Zm = np.argmax(Z2, axis=0)
 
-    Z = Z.reshape(xx.shape)
-    CS = plt.contourf(xx, yy, Z, 200, cmap='jet', alpha = .1)
+    Zm = Zm.reshape(xx.shape)
+    CS = plt.contourf(xx, yy, Zm, 200, cmap='jet', alpha = .1)
 
     # X = X.T
     N = 100
