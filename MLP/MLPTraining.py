@@ -9,8 +9,6 @@ def train(X, y, layerCount, nodeCounts):
     # Tạo một danh sách w, sẽ kích thước là layerCount
     W = []
     b = []
-    W1 = 0.01*np.random.randn(d0, nodeCounts[0])
-    b1 = np.zeros((nodeCounts[0], 1))
 
     i = 0
     while i <= layerCount - 1:
@@ -30,22 +28,19 @@ def train(X, y, layerCount, nodeCounts):
     eta = 1 # Tham chiếu learning rate
     for i in range(1000):
         ## Feedforward
-        Z1 = np.dot(W1.T, X) + b1
-        A1 = np.maximum(Z1, 0) #Mô phỏng hàm ReLU
-
         Z = []
         A = []
         
         i = 0
         while i < layerCount:
-            preA = A1
+            preA = X
             if i != 0:
                 preA = A[i - 1]
             Z.append(np.dot(W[i].T, preA) + b[i])
             A.append(np.maximum(Z[i], 0))
             i = i + 1
 
-        Zl = np.dot(wl.T, A[layerCount - 1]) + bl
+        Zl = np.dot(Wl.T, A[layerCount - 1]) + bl
 
         Yhat = mLPFunctions.softmax(Zl) #Softmax
 
@@ -65,7 +60,8 @@ def train(X, y, layerCount, nodeCounts):
         dW = []
         db = []
 
-        for i in range(layerCount - 1, 0):
+        i = layerCount - 1
+        while i >= 0:
             Wt = Wl
             if i < layerCount - 1:
                 Wt = W[i + 1]
@@ -74,20 +70,14 @@ def train(X, y, layerCount, nodeCounts):
             if i != 0:
                 dW.append(np.dot(A[i - 1], EPre.T))
             else:
-                dW.append(np.dot(A1, EPre.T))
+                dW.append(np.dot(X, EPre.T))
             db.append(np.sum(EPre, axis = 1, keepdims = True))
+            i = i - 1
 
-        dW = reversed(dW)
-        db = reversed(db)
-
-        E1 = np.dot(W[0], EPre)
-        E1[Z1 <= 0] = 0 # Tính gradient ReLU
-        dW1 = np.dot(X, E1.T)
-        db1 = np.sum(E1, axis = 1, keepdims = True)
+        dW.reverse()
+        db.reverse()
 
         # Cập nhật gradient Descent
-        W1 += -eta*dW1
-        b1 += -eta*db1
 
         for i in range(0, layerCount - 1):
             W[i] += -eta*dW[i]
@@ -96,11 +86,8 @@ def train(X, y, layerCount, nodeCounts):
         Wl += -eta*dWl
         bl += -eta*dbl
 
-    Z1 = np.dot(W1.T, X) + b1 
-    A1 = np.maximum(Z1, 0)
-
     # Apre là A trước đó, tại i - 1 hoặc A1 (i == 0)
-    Apre = A1
+    Apre = X
 
     for i in range(0, layerCount - 1):
         Z[i] = np.dot(W[i].T, Apre) + b[i]

@@ -33,6 +33,9 @@
     <Compile Include="MLPTraining.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="temp.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="UserInput.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
