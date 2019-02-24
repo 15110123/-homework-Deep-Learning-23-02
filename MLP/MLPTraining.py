@@ -26,7 +26,7 @@ def train(X, y, layerCount, nodeCounts):
 
     N = X.shape[1]
     eta = 1 # Tham chiếu learning rate
-    for i in range(1000):
+    for j in range(1000):
         ## Feedforward
         Z = []
         A = []
@@ -45,13 +45,12 @@ def train(X, y, layerCount, nodeCounts):
         Yhat = mLPFunctions.softmax(Zl) #Softmax
 
         # In loss sau mỗi 1000 vòng lặp 
-        if i %10 == 0:
+        if j %10 == 0:
             # average cross-entropy loss
-            loss = mLPFunctions.cost(Y, Yhat, W1, Wl, W)
-            print("iter %d, loss: %f" %(i, loss))
+            loss = mLPFunctions.cost(Y, Yhat, Wl, W)
+            print("iter %d, loss: %f" %(j, loss))
 
         # backpropagation
-    
         El = (Yhat - Y )/N
         dWl = np.dot(A[layerCount - 1], El.T)
         dbl = np.sum(El, axis = 1, keepdims = True)
@@ -65,6 +64,7 @@ def train(X, y, layerCount, nodeCounts):
             Wt = Wl
             if i < layerCount - 1:
                 Wt = W[i + 1]
+            # EPre là E tính trước đó, EPre cập nhật sau mỗi vòng lặp 
             EPre = np.dot(Wt, EPre)
             EPre[Z[i] <= 0] == 0
             if i != 0:
@@ -74,6 +74,7 @@ def train(X, y, layerCount, nodeCounts):
             db.append(np.sum(EPre, axis = 1, keepdims = True))
             i = i - 1
 
+        # Đảo ngược mảng dW, do vòng lặp trước đi lùi về 0
         dW.reverse()
         db.reverse()
 
@@ -113,9 +114,9 @@ def train(X, y, layerCount, nodeCounts):
 
     X0 = np.vstack((xx1, yy1))
 
-    Z1 = np.dot(W1.T, X0) + b1 
+    Z1 = np.dot(W[0].T, X0) + b[0] 
     A1 = np.maximum(Z1, 0)
-    Z2 = np.dot(W2.T, A1) + b2
+    Z2 = np.dot(W[1].T, A1) + b[1]
     # predicted class 
     Zm = np.argmax(Z2, axis=0)
 
@@ -135,5 +136,5 @@ def train(X, y, layerCount, nodeCounts):
     plt.ylim(-1.5, 1.5)
     plt.xticks(())
     plt.yticks(())
-    plt.title('#hidden units = %d, accuracy = %.2f %%' %(d1, acc))
+    plt.title('#hidden units = %d, accuracy = %.2f %%' %(nodeCounts[0], acc))
     plt.show()

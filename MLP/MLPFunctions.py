@@ -14,11 +14,10 @@ def convert_labels(y, C = 3):
 
 # cost or loss function
 l = 0.01
-def cost(Y, Yhat, W1, Wl, W):
+def cost(Y, Yhat, Wl, W):
     w = []
-    w1 = np.square(W1).sum()
     for i in W:
         w.append(np.square(i).sum())
     wl = np.square(Wl).sum()
-    R = w1 + sum(w) + wl
+    R = sum(w) + wl
     return (-np.sum(Y*np.log(Yhat))/Y.shape[1])+(l/(2*Y.shape[1]))*R
