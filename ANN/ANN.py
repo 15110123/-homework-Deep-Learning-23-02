@@ -1,3 +1,12 @@
+import os
+import random
+import skimage.data
+import skimage.transform
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+
 def load_data(data_dir):
     """Loads a data set and returns two lists:
     
@@ -52,6 +61,21 @@ for image in images[:5]:
 
 images32 = [skimage.transform.resize(image, (32, 32), mode='constant')
                 for image in images]
+
+def display_images_and_labels(images, labels):
+    unique_labels = set(labels)
+    plt.figure(figsize=(15, 15))
+    i = 1
+    for label in unique_labels:
+        # Pick the first image for each label.
+        image = images[labels.index(label)]
+        plt.subplot(8, 8, i)  # A grid of 8 rows x 8 columns
+        plt.axis('off')
+        plt.title("Label {0} ({1})".format(label, labels.count(label)))
+        i += 1
+        _ = plt.imshow(image)
+plt.show()
+
 display_images_and_labels(images32, labels)
 
 ############# Model
