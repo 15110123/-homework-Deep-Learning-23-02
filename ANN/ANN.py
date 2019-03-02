@@ -33,11 +33,28 @@ def load_data(data_dir):
 
 
 # Load training and testing datasets.
-ROOT_PATH = "/traffic"
+ROOT_PATH = "traffic"
 train_data_dir = os.path.join(ROOT_PATH, "datasets/BelgiumTS/Training")
 test_data_dir = os.path.join(ROOT_PATH, "datasets/BelgiumTS/Testing")
 
 images, labels = load_data(train_data_dir)
+
+print("Unique Labels: {0}\nTotal Images: {1}".format(len(set(labels)), len(images)))
+
+def display_images_and_labels(images, labels):
+    unique_labels = set(labels)
+    plt.figure(figsize=(15, 15))
+    i = 1
+    for label in unique_labels:
+        # Pick the first image for each label.
+        image = images[labels.index(label)]
+        plt.subplot(8, 8, i)  # A grid of 8 rows x 8 columns
+        plt.axis('off')
+        plt.title("Label {0} ({1})".format(label, labels.count(label)))
+        i += 1
+        _ = plt.imshow(image)
+
+display_images_and_labels(images, labels)
 
 def display_label_images(images, label):
     """Display images of a specific label."""
@@ -59,24 +76,18 @@ display_label_images(images, 32)
 for image in images[:5]:
     print("shape: {0}, min: {1}, max: {2}".format(image.shape, image.min(), image.max()))
 
-images32 = [skimage.transform.resize(image, (32, 32), mode='constant')
-                for image in images]
-
-def display_images_and_labels(images, labels):
-    unique_labels = set(labels)
-    plt.figure(figsize=(15, 15))
-    i = 1
-    for label in unique_labels:
-        # Pick the first image for each label.
-        image = images[labels.index(label)]
-        plt.subplot(8, 8, i)  # A grid of 8 rows x 8 columns
-        plt.axis('off')
-        plt.title("Label {0} ({1})".format(label, labels.count(label)))
-        i += 1
-        _ = plt.imshow(image)
 plt.show()
 
+images32 = [skimage.transform.resize(image, (32, 32), mode='constant')
+                for image in images]
 display_images_and_labels(images32, labels)
+
+for image in images32[:5]:
+    print("shape: {0}, min: {1}, max: {2}".format(image.shape, image.min(), image.max()))
+
+labels_a = np.array(labels)
+images_a = np.array(images32)
+print("labels: ", labels_a.shape, "\nimages: ", images_a.shape)
 
 ############# Model
 # Create a graph to hold the model.
