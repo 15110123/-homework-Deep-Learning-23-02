@@ -111,6 +111,7 @@ with graph.as_default():
     # Fully connected layer. 
     # Kích thước FC ứng với số nhãn (62). 
     logits = tf.contrib.layers.fully_connected(images_flat, 62, tf.nn.relu)
+    logits = tf.contrib.layers.fully_connected(logits, 62, tf.nn.relu)
 
     # Chuyển logits sang chỉ mục nhãn (có thể xem là nhãn khi nhãn cũng là sô chỉ mục).
     # Kích thước mặc định [None] => mảng 1 chiều có length == batch_size.
@@ -138,7 +139,7 @@ session = tf.Session(graph=graph)
 # Bước đầu tiên là khởi tạo các biến. 
 _ = session.run([init])
 
-for i in range(201):
+for i in range(1000):
     _, loss_value = session.run([train, loss], 
                                 feed_dict={images_ph: images_a, labels_ph: labels_a})
     if i % 10 == 0:
